@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -106,6 +107,12 @@ enum class AppDestinations(
     SETTINGS_SCREEN("Settings", Icons.Default.Settings)
 }
 
+enum class SubScreens {
+    MAIN,
+    SCREEN1,
+    SCREEN2
+}
+
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -117,21 +124,77 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = viewModel.homeText, fontSize = 24.sp)
+    var currentSubScreen by rememberSaveable { mutableStateOf(SubScreens.MAIN) }
 
-        Spacer(modifier = Modifier.height(20.dp))
+    when (currentSubScreen) {
+        SubScreens.MAIN -> {
+            Column(
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = viewModel.homeText, fontSize = 24.sp)
 
-        Button(onClick = { viewModel.updateHomeText() }) {
-            Text("Натисни")
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(onClick = { viewModel.updateHomeText() }) {
+                    Text("Натисни")
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Button(onClick = { currentSubScreen = SubScreens.SCREEN1 }) {
+                    Text("Перейти до підекрану 1")
+                }
+            }
+        }
+
+        SubScreens.SCREEN1 -> {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = viewModel.homeText, fontSize = 24.sp)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(onClick = { viewModel.updateHomeText() }) {
+                    Text("Натисни")
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Button(onClick = { currentSubScreen = SubScreens.SCREEN2 }) {
+                    Text("Перейти до підекрану 2")
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Button(onClick = { currentSubScreen = SubScreens.MAIN }) {
+                    Text("Назад")
+                }
+            }
+        }
+
+        SubScreens.SCREEN2 -> {
+            Column(
+                modifier = modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("My")
+
+                Button(onClick = { currentSubScreen = SubScreens.MAIN }) {
+                    Text("На головний підекран")
+                }
+            }
         }
     }
 }
-
 
 @Composable
 fun AboutScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
