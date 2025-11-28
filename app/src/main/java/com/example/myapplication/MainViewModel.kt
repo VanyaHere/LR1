@@ -27,4 +27,16 @@ class MainViewModel : ViewModel() {
     fun updateSettingsText() {
         settingsText = "My ViewModel!"
     }
+
+    val users = listOf(
+        User(1, "Володимир"),
+        User(2, "Микита"),
+        User(3, "Олег")
+    )
+
+    val products = listOf(
+        Product(1, "Яблуко", 19.99),
+        Product(2, "Банан", 25.99),
+        Product(3, "Апельсин", 39.49)
+    )
 }
