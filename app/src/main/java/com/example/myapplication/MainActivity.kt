@@ -152,6 +152,19 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             Text("Натисни")
         }
 
+        Spacer(Modifier.height(16.dp))
+
+        Button(onClick = {
+            viewModel.addProductSimple(
+                categoryId = 1L,
+                name = "New Test Product",
+                price = "$123",
+                values = listOf("Option 1", "Option 2")
+            )
+        }) {
+            Text("Додати тестовий продукт")
+        }
+
         Spacer(Modifier.height(30.dp))
 
         Button(onClick = { navController.navigate(Routes.HOME_SCREEN1) }) {
@@ -167,12 +180,12 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        FeaturedProductsRow(viewModel)
         Spacer(modifier = Modifier.height(16.dp))
 
         ProductListScreen(viewModel)
     }
 }
+
 
 @Composable
 fun HomeScreen1(navController: NavController, viewModel: MainViewModel) {
@@ -265,20 +278,37 @@ fun ProductListScreen(viewModel: MainViewModel) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth()
     ) {
+        item {
+            FeaturedProductsRow(viewModel = viewModel)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         items(
             items = viewModel.products,
             key = { item ->
                 when (item) {
-                    is ProductItem -> item.id
-                    is HeaderItem -> item.id
-                    is NewsItem -> item.id
-                    else -> item.hashCode()
+                    is ProductItem -> "product-${item.id}"
+                    is HeaderItem  -> "header-${item.id}"
+                    is NewsItem    -> "news-${item.id}"
+                    else           -> "other-${item.hashCode()}"
                 }
             }
         ) { item ->
             when (item) {
                 is HeaderItem -> HeaderItemView(item)
-                is ProductItem -> ProductItemView(item)
+                is ProductItem -> ProductItemView(
+                    item = item,
+                    onEdit = { p ->
+                        viewModel.updateProductSimple(
+                            id = p.id,
+                            name = p.title + " (updated)",
+                            price = p.price,
+                            values = p.values
+                        )
+                    },
+                    onDelete = { p ->
+                        viewModel.deleteProduct(p.id)
+                    }
+                )
                 is NewsItem -> NewsItemView(item)
                 else -> {}
             }
@@ -302,7 +332,10 @@ fun FeaturedProductsRow(viewModel: MainViewModel) {
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(viewModel.featuredProducts, key = { it.id }) { item ->
+            items(
+                items = viewModel.featuredProducts,
+                key = { item -> "featured-${item.id}" }
+            ) { item ->
                 FeaturedProductCard(item)
             }
         }
@@ -348,7 +381,11 @@ fun FeaturedProductCard(item: ProductItem) {
 }
 
 @Composable
-fun ProductItemView(item: ProductItem) {
+fun ProductItemView(
+    item: ProductItem,
+    onEdit: (ProductItem) -> Unit,
+    onDelete: (ProductItem) -> Unit
+) {
     Surface(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -392,6 +429,20 @@ fun ProductItemView(item: ProductItem) {
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TextButton(onClick = { onEdit(item) }) {
+                    Text("Edit")
+                }
+                TextButton(onClick = { onDelete(item) }) {
+                    Text("Delete")
                 }
             }
         }
