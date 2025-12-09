@@ -12,6 +12,7 @@ interface CatalogDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun getCategoriesCount(): Int
+
     @Insert
     suspend fun insertCategory(category: CategoryEntity): Long
 
@@ -35,4 +36,14 @@ interface CatalogDao {
 
     @Query("SELECT * FROM products WHERE productId = :id")
     suspend fun getProductById(id: Long): ProductEntity?
+
+    @Query("DELETE FROM products")
+    suspend fun deleteAllProducts()
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAllCategories()
+
+    @Query("SELECT * FROM categories LIMIT 1")
+    suspend fun getFirstCategory(): CategoryEntity?
+
 }

@@ -154,15 +154,17 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
 
         Spacer(Modifier.height(16.dp))
 
-        Button(onClick = {
-            viewModel.addProductSimple(
-                categoryId = 1L,
-                name = "New Test Product",
-                price = "$123",
-                values = listOf("Option 1", "Option 2")
-            )
-        }) {
-            Text("Додати тестовий продукт")
+        if (false) {
+            Button(onClick = {
+                viewModel.addProductSimple(
+                    categoryId = 1L,
+                    name = "New Test Product",
+                    price = "$123",
+                    values = listOf("Option 1", "Option 2")
+                )
+            }) {
+                Text("Додати тестовий продукт")
+            }
         }
 
         Spacer(Modifier.height(30.dp))
@@ -275,42 +277,66 @@ fun SettingsScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 
 @Composable
 fun ProductListScreen(viewModel: MainViewModel) {
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        item {
-            FeaturedProductsRow(viewModel = viewModel)
-            Spacer(modifier = Modifier.height(16.dp))
+
+    val products = viewModel.products
+
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        Button(
+            onClick = { viewModel.refreshData() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Оновити")
         }
-        items(
-            items = viewModel.products,
-            key = { item ->
+
+        Button(
+            onClick = { viewModel.addProductFromButton() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text("Додати продукт")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(products) { item ->
                 when (item) {
-                    is ProductItem -> "product-${item.id}"
-                    is HeaderItem  -> "header-${item.id}"
-                    is NewsItem    -> "news-${item.id}"
-                    else           -> "other-${item.hashCode()}"
-                }
-            }
-        ) { item ->
-            when (item) {
-                is HeaderItem -> HeaderItemView(item)
-                is ProductItem -> ProductItemView(
-                    item = item,
-                    onEdit = { p ->
-                        viewModel.updateProductSimple(
-                            id = p.id,
-                            name = p.title + " (updated)",
-                            price = p.price,
-                            values = p.values
+
+                    is HeaderItem -> {
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp)
                         )
-                    },
-                    onDelete = { p ->
-                        viewModel.deleteProduct(p.id)
                     }
-                )
-                is NewsItem -> NewsItemView(item)
-                else -> {}
+
+                    is ProductItem -> {
+                        ProductItemView(
+                            item = item,
+                            onEdit = { product ->
+                                viewModel.updateProductSimple(
+                                    id = product.id,
+                                    name = product.title + " (Edited)",
+                                    price = product.price,
+                                    values = product.values
+                                )
+                            },
+                            onDelete = { product ->
+                                viewModel.deleteProduct(product.id)
+                            }
+                        )
+                    }
+
+                    is NewsItem -> {
+                        NewsItemView(item)
+                    }
+                }
             }
         }
     }
@@ -383,8 +409,8 @@ fun FeaturedProductCard(item: ProductItem) {
 @Composable
 fun ProductItemView(
     item: ProductItem,
-    onEdit: (ProductItem) -> Unit,
-    onDelete: (ProductItem) -> Unit
+    onEdit: (ProductItem) -> Unit = {},
+    onDelete: (ProductItem) -> Unit = {}
 ) {
     Surface(
         modifier = Modifier
@@ -439,15 +465,16 @@ fun ProductItemView(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 TextButton(onClick = { onEdit(item) }) {
-                    Text("Edit")
+                    Text("Edit", color = Color(0xFFBB86FC))
                 }
                 TextButton(onClick = { onDelete(item) }) {
-                    Text("Delete")
+                    Text("Delete", color = Color(0xFFFF6B6B))
                 }
             }
         }
     }
 }
+
 @Composable
 fun NewsItemView(item: NewsItem) {
     Surface(

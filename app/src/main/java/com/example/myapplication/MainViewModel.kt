@@ -33,6 +33,11 @@ data class NewsItem(
 ) : ListItem
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
+    fun refreshData() {
+        viewModelScope.launch {
+            repository.refreshFromApi()
+        }
+    }
 
     var homeText by mutableStateOf("Головний екран")
         private set
@@ -67,6 +72,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val db = AppDatabase.getInstance(application)
         repository = CatalogRepository(db.catalogDao())
 
+        // Підписка на дані з Room
         viewModelScope.launch {
             repository.listItemsFlow.collectLatest { list ->
                 products.clear()
@@ -89,111 +95,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun preloadIfEmpty() {
         viewModelScope.launch {
             if (!repository.isEmpty()) return@launch
-
-            val laptopsId = repository.addCategory("Laptops Section")
-            val smartphonesId = repository.addCategory("Smartphones Section")
-            val tabletsId = repository.addCategory("Tablets & Wearables")
-            val accessoriesId = repository.addCategory("Accessories")
-
-            repository.addProduct(
-                categoryId = laptopsId,
-                name = "Ultrabooks",
-                price = "$999",
-                values = listOf(
-                    "Dell XPS 13",
-                    "HP Spectre x360",
-                    "Lenovo Yoga Slim",
-                    "Asus ZenBook",
-                    "Microsoft Surface Laptop"
-                )
-            )
-            repository.addProduct(
-                categoryId = laptopsId,
-                name = "Gaming Laptops",
-                price = "$1499",
-                values = listOf(
-                    "Asus ROG Strix",
-                    "MSI Raider",
-                    "Lenovo Legion",
-                    "Acer Predator",
-                    "HP Omen"
-                )
-            )
-
-            repository.addProduct(
-                categoryId = smartphonesId,
-                name = "Flagship Phones",
-                price = "$1099",
-                values = listOf(
-                    "iPhone 15 Pro",
-                    "Samsung Galaxy S24 Ultra",
-                    "Google Pixel 9 Pro",
-                    "OnePlus 12",
-                    "Xiaomi 14 Pro"
-                )
-            )
-            repository.addProduct(
-                categoryId = smartphonesId,
-                name = "Budget Phones",
-                price = "$399",
-                values = listOf(
-                    "Samsung Galaxy A55",
-                    "Redmi Note 13",
-                    "Realme 12",
-                    "Motorola G Power",
-                    "Nokia G22"
-                )
-            )
-
-            repository.addProduct(
-                categoryId = tabletsId,
-                name = "Tablets",
-                price = "$599",
-                values = listOf(
-                    "iPad Air",
-                    "iPad Pro",
-                    "Samsung Galaxy Tab S9",
-                    "Xiaomi Pad 6",
-                    "Lenovo Tab P12"
-                )
-            )
-            repository.addProduct(
-                categoryId = tabletsId,
-                name = "Smartwatches",
-                price = "$299",
-                values = listOf(
-                    "Apple Watch Series 10",
-                    "Samsung Galaxy Watch7",
-                    "Garmin Venu 3",
-                    "Huawei Watch GT",
-                    "Xiaomi Watch 2"
-                )
-            )
-
-            repository.addProduct(
-                categoryId = accessoriesId,
-                name = "Laptop Accessories",
-                price = "$79",
-                values = listOf(
-                    "Wireless Mouse",
-                    "Mechanical Keyboard",
-                    "USB-C Docking Station",
-                    "External SSD",
-                    "Laptop Stand"
-                )
-            )
-            repository.addProduct(
-                categoryId = accessoriesId,
-                name = "Phone Accessories",
-                price = "$29",
-                values = listOf(
-                    "MagSafe Charger",
-                    "Power Bank",
-                    "Bluetooth Earbuds",
-                    "Protective Case",
-                    "Screen Protector"
-                )
-            )
+            repository.refreshFromApi()
         }
     }
 
@@ -226,4 +128,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.deleteCategory(id.toLong())
         }
     }
+    fun addProductFromButton() {
+        viewModelScope.launch {
+            repository.addProductToAnyCategory(
+                name = "New Product",
+                price = "$99",
+                values = listOf("Value A", "Value B")
+            )
+        }
+    }
+
 }
